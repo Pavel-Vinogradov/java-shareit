@@ -1,27 +1,23 @@
-package ru.practicum.shareit.booking;
+package ru.practicum.shareit.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDate;
 
 /**
- * TODO Sprint add-bookings.
+ * TODO Sprint add-item-requests.
  */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class Booking {
+public class ItemRequest {
     private int id;
-    private LocalDate start;
-    private LocalDate end;
-    private Item item;
-    private User booker;
-    private Status status;
-
+    private String description;
+    private User requestor;
+    private LocalDate created;
 }

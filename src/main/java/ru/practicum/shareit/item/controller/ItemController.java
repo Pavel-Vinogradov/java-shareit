@@ -1,50 +1,69 @@
 package ru.practicum.shareit.item.controller;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.service.ItemService;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
  * TODO Sprint add-controllers.
  */
 @RestController
+@RequestMapping("/items")
 @RequiredArgsConstructor
-@RequestMapping(path = "/items")
+@Slf4j
 public class ItemController {
-    private static final String USERID_HEADER = "X-Sharer-User-Id";
+    private static final String USER_ID_HEADER = "X-Sharer-User-Id";
     private final ItemService itemService;
 
-
-    @GetMapping
-    public List<Item> getItems(@RequestHeader(USERID_HEADER) Long userId) {
-        return itemService.getItems(userId);
-    }
-
-    @GetMapping("/{itemId}")
-    public Item getItem(@PathVariable Long itemId) {
-        return itemService.getItem(itemId);
-    }
-
     @PostMapping
-    public Item addItem(@RequestHeader(USERID_HEADER) Long userId, @RequestBody Item item) {
-        return itemService.addItem(userId, item);
+    public ItemDto saveItem(@RequestBody @Valid ItemDto itemDto,
+                            @RequestHeader(name = USER_ID_HEADER) long userId) {
+        log.info("Получен POST-запрос /items {} ", itemDto);
+        return itemService.saveItem(itemDto, userId);
     }
 
     @PatchMapping("/{itemId}")
-    public Item updateItem(@RequestHeader(USERID_HEADER) Long userId, @PathVariable Long itemId, @RequestBody Item item) {
-        return itemService.updateItem(userId, itemId, item);
+    public ItemDto updateItem(@RequestHeader(name = USER_ID_HEADER) Long userId,
+                              @RequestBody ItemDto itemDto, @PathVariable Long itemId) {
+        log.info("Получен PATCH-запрос /itemId {} ", itemId);
+        itemDto.setId(itemId);
+        return itemService.updateItem(itemDto, userId);
     }
 
-    @DeleteMapping("/{itemId}")
-    public Boolean deleteItem(@PathVariable Long itemId) {
-        return itemService.deleteItem(itemId);
+    @GetMapping("/{itemId}")
+    public ItemDto getItemById(@PathVariable Long itemId) {
+        log.info("Получен GET-запрос /itemId {} ", itemId);
+        return itemService.getItemById(itemId);
+    }
+
+    @GetMapping
+    public List<ItemDto> getItemsByUser(@RequestHeader(name = USER_ID_HEADER) long userId) {
+        log.info("Получен GET-запрос: список всех предметов одного пользователя {} ", userId);
+        return itemService.getItemsByUser(userId);
     }
 
     @GetMapping("/search")
-    public List<Item> searchItems(@RequestParam String text) {
-        return itemService.searchItems(text);
+    public Collection<ItemDto> searchItem(@RequestParam @NotBlank String text) {
+        if (text.isBlank()) {
+            return new ArrayList<>();
+        }
+        log.info("Получен GET-запрос /text {} ", text);
+        return itemService.searchItem(text);
     }
+
+    @DeleteMapping("/{itemId}")
+    public void deleteItem(@RequestHeader(name = USER_ID_HEADER) long userId,
+                           @PathVariable long itemId) {
+        log.info("Получен DELETE- запрос на удаление вещи {} ", itemId);
+        itemService.deleteItemById(userId, itemId);
+    }
+
 }

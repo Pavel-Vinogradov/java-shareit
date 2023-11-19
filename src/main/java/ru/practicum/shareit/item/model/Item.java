@@ -2,20 +2,21 @@ package ru.practicum.shareit.item.model;
 
 import lombok.Builder;
 import lombok.Data;
-import org.apache.catalina.connector.Request;
-import ru.practicum.shareit.user.model.User;
+import lombok.Getter;
+import ru.practicum.shareit.request.ItemRequest;
+
 
 /**
  * TODO Sprint add-controllers.
  */
 @Data
+@Getter
 @Builder
 public class Item {
-
-    private long id;
+    private Long id;
     private String name;
     private String description;
+    private Long ownerId;
     private Boolean available;
-    private User owner;
-    private Request request;
+    private ItemRequest request;
 }
