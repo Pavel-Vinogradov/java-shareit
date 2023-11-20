@@ -3,7 +3,6 @@ package ru.practicum.shareit.item.repository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
-import ru.practicum.shareit.exceptions.UserNotFoundException;
 import ru.practicum.shareit.exceptions.ValidationException;
 import ru.practicum.shareit.item.model.Item;
 
@@ -30,24 +29,11 @@ public class ItemRepositoryImpl implements ItemRepository {
 
     @Override
     public Item updateItem(long ownerId, Item item) {
-        Item updateItem = items.get(item.getId());
-        if (!updateItem.getOwnerId().equals(ownerId)) {
-            log.warn("Владелец вещи не найден: {} ", ownerId);
-            throw new UserNotFoundException("Владелец вещи не найден " + ownerId);
-        }
-
-        if (Objects.nonNull(item.getName())) {
-            updateItem.setName(item.getName());
-        }
-        if (Objects.nonNull(item.getDescription())) {
-            updateItem.setDescription(item.getDescription());
-        }
-        if (Objects.nonNull(item.getAvailable())) {
-            updateItem.setAvailable(item.getAvailable());
-        }
-        log.info("{} {}", item, ownerId);
-        return updateItem;
+        items.put(item.getId(), item);
+        log.info("{}", item);
+        return item;
     }
+
 
 
     @Override

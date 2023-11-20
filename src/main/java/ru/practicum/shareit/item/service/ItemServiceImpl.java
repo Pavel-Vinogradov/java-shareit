@@ -3,6 +3,7 @@ package ru.practicum.shareit.item.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.exceptions.UserNotFoundException;
 import ru.practicum.shareit.exceptions.ValidationException;
 import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -13,6 +14,7 @@ import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static ru.practicum.shareit.item.mapper.ItemMapper.toItem;
@@ -37,12 +39,26 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemDto updateItem(ItemDto itemDto, long userId) {
-        userRepository.getUserById(userId);
-        Item item = toItem(itemDto);
-        item.setOwnerId(userId);
-        log.info("Выполнено обновление информации о предмете = {}, " +
-                "принадлежащем пользователю, id = {}", itemDto, userId);
-        return toItemDto(itemRepository.updateItem(userId, item));
+        Item item = itemRepository.getItemById(itemDto.getId());
+
+        if (!item.getOwnerId().equals(userId)) {
+            throw new UserNotFoundException("Владелец вещи не найден " + userId);
+        }
+        if (Objects.nonNull(itemDto.getName())) {
+            item.setName(itemDto.getName());
+        }
+        if (Objects.nonNull(itemDto.getDescription())) {
+            item.setDescription(itemDto.getDescription());
+        }
+        if (Objects.nonNull(itemDto.getAvailable())) {
+            item.setAvailable(itemDto.getAvailable());
+        }
+
+        Item updatedItem = itemRepository.updateItem(userId, item);
+
+        log.info("Выполнено обновление информации о предмете = {}, принадлежащем пользователю, id = {}", itemDto, userId);
+
+        return toItemDto(updatedItem);
     }
 
     @Override
