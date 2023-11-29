@@ -3,14 +3,17 @@ package ru.practicum.shareit.item.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.booking.Status;
+import ru.practicum.shareit.booking.enums.Status;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.comment.dto.CommentDto;
 import ru.practicum.shareit.comment.mapper.CommentMapper;
 import ru.practicum.shareit.comment.model.Comment;
 import ru.practicum.shareit.comment.repository.CommentRepository;
-import ru.practicum.shareit.exceptions.*;
+import ru.practicum.shareit.exceptions.CommentNotAuthorNotBookingException;
+import ru.practicum.shareit.exceptions.InCorrectBookingException;
+import ru.practicum.shareit.exceptions.ItemNotFoundException;
+import ru.practicum.shareit.exceptions.UserNotFoundException;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
@@ -41,35 +44,46 @@ public class ItemServiceImpl implements ItemService {
     private final BookingRepository bookingRepository;
 
     @Override
-    public Item saveItem(ItemDto itemDto, long userId) {
+    public ItemDto saveItem(ItemDto itemDto, long userId) {
         User user = userRepository.findById(userId).orElseThrow(() ->
                 new UserNotFoundException("Пользователь не найден " + userId));
         Item item = toItem(user, itemDto);
         log.info("Добавлен предмет {}, владелец: id = {}", itemDto, userId);
-        return itemRepository.save(item);
+        itemRepository.save(item);
+        return toItemDto(item);
     }
 
     @Override
-    public Item updateItem(ItemDto itemDto, long userId) {
-        User user = userRepository.findById(userId).orElseThrow(() ->
-                new UserNotFoundException("Пользователь не найден " + userId));
-        Item itemUpdate = itemRepository.findById(itemDto.getId()).orElseThrow(() ->
+    public ItemDto updateItem(ItemDto itemDto, long userId) {
+        Item updatedItem  = itemRepository.findById(itemDto.getId()).orElseThrow(() ->
                 new ItemNotFoundException("Предмет не найден " + itemDto.getId()));
-        Item item = toItem(user, itemDto);
-        itemUpdate.setOwnerId(userId);
-        if (Objects.nonNull(item.getName())) {
-            itemUpdate.setName(item.getName());
+        if (!Objects.equals(updatedItem.getOwnerId(), userId)) {
+            throw new ItemNotFoundException("Item not belongs to this user.");
         }
-        if (Objects.nonNull(item.getDescription())) {
-            itemUpdate.setDescription(item.getDescription());
-        }
-        if (Objects.nonNull(item.getAvailable())) {
-            itemUpdate.setAvailable(item.getAvailable());
-        }
+        updatedItem = itemUpdate(updatedItem, itemDto);
         log.info("Выполнено обновление информации о предмете = {}, " +
-                "принадлежащем пользователю, id = {}", item.getId(), userId);
-        return itemRepository.save(itemUpdate);
+                "принадлежащем пользователю, id = {}", updatedItem.getId(), userId);
+        itemRepository.save(updatedItem);
+        return toItemDto(updatedItem);
     }
+
+    private Item itemUpdate(Item updatedItem, ItemDto itemDto) {
+        if (itemDto.getName() != null) {
+            updatedItem.setName(itemDto.getName());
+        }
+        if (itemDto.getDescription() != null) {
+            updatedItem.setDescription(itemDto.getDescription());
+        }
+        if (itemDto.getAvailable() != null) {
+            updatedItem.setAvailable(itemDto.getAvailable());
+        }
+        if (itemDto.getOwnerId() != null) {
+            updatedItem.setOwnerId(userRepository.findById(itemDto.getOwnerId())
+                    .orElseThrow(() -> new UserNotFoundException("User not found.")).getId());
+        }
+        return updatedItem;
+    }
+
 
     @Override
     public ItemDto getItemById(long userId, Long itemId) {
@@ -107,12 +121,12 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public Collection<Item> searchItem(String text) {
+    public Collection<ItemDto> searchItem(String text) {
         if (text.isEmpty()) {
             return Collections.emptyList();
         }
         log.info("Выполнен поиск среди предметов по : {}.", text);
-        return itemRepository.searchItem(text);
+        return itemRepository.searchItem(text).stream().map(ItemMapper::toItemDto).collect(Collectors.toList());
     }
 
     @Override

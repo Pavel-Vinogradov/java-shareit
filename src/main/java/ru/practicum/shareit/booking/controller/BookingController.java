@@ -5,14 +5,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingDto;
-import ru.practicum.shareit.booking.mapper.BookingMapper;
 import ru.practicum.shareit.booking.service.BookingService;
 
 import javax.validation.Valid;
 import java.util.List;
-import java.util.stream.Collectors;
-
-import static ru.practicum.shareit.booking.mapper.BookingMapper.toBookingDto;
 
 /**
  * TODO Sprint add-bookings.
@@ -38,7 +34,7 @@ public class BookingController {
                                              @PathVariable Long bookingId,
                                              @RequestParam boolean approved) {
         log.info("Получен PATCH-запрос /bookingId подтверждения/отмены бронирования");
-        return toBookingDto(bookingService.confirmOrCancelBooking(userId, bookingId, approved));
+        return bookingService.confirmOrCancelBooking(userId, bookingId, approved);
     }
 
     @GetMapping("/{bookingId}")
@@ -46,27 +42,22 @@ public class BookingController {
                                                  @PathVariable Long bookingId) {
         log.info("Получен GET-запрос просмотра бронирования владельцем предмета или" +
                 " пользователем, бронирующим предмет");
-        return toBookingDto(bookingService.getBookingForOwnerOrBooker(userId, bookingId));
+        return bookingService.getBookingForOwnerOrBooker(userId, bookingId);
     }
 
     @GetMapping
     public List<BookingDto> getAllBookingsForBooker(@RequestHeader(name = USER_ID_HEADER) long userId,
-                                                    @RequestParam(defaultValue = "ALL")
-                                                    String state) {
+                                                    @RequestParam(name = "state", defaultValue = "all") String stateParam) {
         log.info("Получен GET-запрос просмотра всех забронированных вещей и статусов их бронирования " +
                 "для  пользователя");
-        return bookingService.getAllBookingsForUser(userId, state, false).stream()
-                .map(BookingMapper::toBookingDto)
-                .collect(Collectors.toList());
+        return bookingService.getBooking(userId, stateParam);
     }
 
     @GetMapping("/owner")
     public List<BookingDto> getAllBookingsForOwner(@RequestHeader(name = USER_ID_HEADER) long userId,
-                                                   @RequestParam(defaultValue = "ALL") String state) {
+                                                   @RequestParam(name = "state", defaultValue = "all") String stateParam) {
         log.info("Получен GET-запрос просмотра всех забронированных вещей и статусов их бронирования " +
                 "для владельца");
-        return bookingService.getAllBookingsForUser(userId, state, true).stream()
-                .map(BookingMapper::toBookingDto)
-                .collect(Collectors.toList());
+        return bookingService.getOwnerBooking(userId, stateParam);
     }
 }

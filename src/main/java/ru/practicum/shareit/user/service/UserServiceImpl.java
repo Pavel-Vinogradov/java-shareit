@@ -4,10 +4,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exceptions.UserNotFoundException;
+import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.user.mapper.UserMapper;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.util.Collection;
+import java.util.stream.Collectors;
+
+import static ru.practicum.shareit.user.mapper.UserMapper.*;
 
 @Service
 @RequiredArgsConstructor
@@ -17,15 +22,16 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
 
     @Override
-    public Collection<User> getAllUsers() {
+    public Collection<UserDto> getAllUsers() {
         log.info("Получен список всех пользователей");
-        return userRepository.findAll();
+        return userRepository.findAll().stream().map(UserMapper::toUserDto).collect(Collectors.toList());
     }
 
     @Override
-    public User saveUser(User user) {
-        log.info("Создан пользователь, id = {} ", user);
-        return userRepository.save(user);
+    public UserDto saveUser(UserDto userDto) {
+        log.info("Создан пользователь, id = {} ", userDto);
+        User user = toUser(userDto);
+        return toUserDto(userRepository.save(user));
     }
 
     @Override
@@ -35,7 +41,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User updateUser(User user) {
+    public UserDto updateUser(UserDto userDto, long userId) {
+        User user = toUserWithId(userId, userDto);
         User oldUser = userRepository.findById(user.getId()).orElseThrow(() ->
                 new UserNotFoundException("Пользователь не найден " + user.getId()));
         if (user.getName() != null) {
@@ -45,14 +52,14 @@ public class UserServiceImpl implements UserService {
             oldUser.setEmail(user.getEmail());
         }
         log.info("Данные пользователя {} обновлены ", user);
-        return userRepository.save(oldUser);
+        return toUserDto(userRepository.save(oldUser));
     }
 
     @Override
-    public User getUserById(long id) {
+    public UserDto getUserById(long id) {
         User user = userRepository.findById(id).orElseThrow(() ->
                 new UserNotFoundException("Пользователь не найден " + id));
         log.info("Получен пользователь, id = {} ", id);
-        return user;
+        return toUserDto(user);
     }
 }

@@ -24,7 +24,7 @@ public class Comment {
     private Item item;
     @ManyToOne(fetch = FetchType.EAGER)
     @ToString.Exclude
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "author_id ", nullable = false)
     private User author;
     @Column
     private LocalDateTime created = LocalDateTime.now();

@@ -5,17 +5,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.comment.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.service.ItemService;
-
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
-
-import static ru.practicum.shareit.item.mapper.ItemMapper.toItemDto;
 
 /**
  * TODO Sprint add-controllers.
@@ -32,7 +27,7 @@ public class ItemController {
     public ItemDto saveItem(@RequestBody @Valid ItemDto itemDto,
                             @RequestHeader(name = USER_ID_HEADER) long userId) {
         log.info("Получен POST-запрос /items {} ", itemDto);
-        return toItemDto(itemService.saveItem(itemDto, userId));
+        return itemService.saveItem(itemDto, userId);
     }
 
     @PatchMapping("/{itemId}")
@@ -40,7 +35,7 @@ public class ItemController {
                               @RequestBody ItemDto itemDto, @PathVariable Long itemId) {
         log.info("Получен PATCH-запрос /itemId {} ", itemId);
         itemDto.setId(itemId);
-        return toItemDto(itemService.updateItem(itemDto, userId));
+        return itemService.updateItem(itemDto, userId);
     }
 
     @GetMapping("/{itemId}")
@@ -62,9 +57,7 @@ public class ItemController {
             return new ArrayList<>();
         }
         log.info("Получен GET-запрос /text {} ", text);
-        return itemService.searchItem(text).stream()
-                .map(ItemMapper::toItemDto)
-                .collect(Collectors.toList());
+        return itemService.searchItem(text);
     }
 
     @PostMapping("/{itemId}/comment")

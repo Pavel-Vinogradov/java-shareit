@@ -5,16 +5,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.user.dto.UserDto;
-import ru.practicum.shareit.user.mapper.UserMapper;
-import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.UserService;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.Collection;
-import java.util.stream.Collectors;
-
-import static ru.practicum.shareit.user.mapper.UserMapper.*;
 
 /**
  * TODO Sprint add-controllers.
@@ -30,14 +25,12 @@ public class UserController {
 
     @GetMapping
     public Collection<UserDto> getAllUsers() {
-        log.info("Получен GET-апрос /users");
-        return userService.getAllUsers().stream()
-                .map(UserMapper::toUserDto)
-                .collect(Collectors.toList());
+        log.info("Получен GET-запрос /users");
+        return userService.getAllUsers();
     }
 
     @GetMapping("{userId}")
-    public User getUserById(@PathVariable @Valid long userId) {
+    public UserDto getUserById(@PathVariable @Valid long userId) {
         log.info("Получен GET-запрос /userId {} ", userId);
         return userService.getUserById(userId);
     }
@@ -45,8 +38,7 @@ public class UserController {
     @PostMapping
     public UserDto saveUser(@NotNull @Valid @RequestBody UserDto userDto) {
         log.info("Получен POST-запрос /users {} ", userDto);
-        User user = toUser(userDto);
-        return toUserDto(userService.saveUser(user));
+        return userService.saveUser(userDto);
     }
 
     @DeleteMapping("{userId}")
@@ -57,8 +49,7 @@ public class UserController {
 
     @PatchMapping("/{userId}")
     public UserDto updateUser(@RequestBody UserDto userDto, @PathVariable long userId) {
-        User user = toUserWithId(userId, userDto);
         log.info("Получен PATCH-запрос /userId {} ", userId);
-        return toUserDto(userService.updateUser(user));
+        return userService.updateUser(userDto,userId);
     }
 }
