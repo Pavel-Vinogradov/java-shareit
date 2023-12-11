@@ -5,10 +5,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.user.dto.UserDto;
-import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.UserService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.util.Collection;
 
 /**
@@ -25,18 +25,18 @@ public class UserController {
 
     @GetMapping
     public Collection<UserDto> getAllUsers() {
-        log.info("Получен GET-апрос /users");
+        log.info("Получен GET-запрос /users");
         return userService.getAllUsers();
     }
 
     @GetMapping("{userId}")
-    public User getUserById(@PathVariable @Valid long userId) {
+    public UserDto getUserById(@PathVariable @Valid long userId) {
         log.info("Получен GET-запрос /userId {} ", userId);
         return userService.getUserById(userId);
     }
 
     @PostMapping
-    public UserDto saveUser(@Valid @RequestBody UserDto userDto) {
+    public UserDto saveUser(@NotNull @Valid @RequestBody UserDto userDto) {
         log.info("Получен POST-запрос /users {} ", userDto);
         return userService.saveUser(userDto);
     }
@@ -49,8 +49,7 @@ public class UserController {
 
     @PatchMapping("/{userId}")
     public UserDto updateUser(@RequestBody UserDto userDto, @PathVariable long userId) {
-        userDto.setId(userId);
         log.info("Получен PATCH-запрос /userId {} ", userId);
-        return userService.updateUser(userDto);
+        return userService.updateUser(userDto,userId);
     }
 }
