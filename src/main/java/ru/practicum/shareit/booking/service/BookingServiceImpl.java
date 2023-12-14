@@ -2,11 +2,14 @@ package ru.practicum.shareit.booking.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.enums.State;
 import ru.practicum.shareit.booking.enums.Status;
-import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.mapper.BookingMapper;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.repository.BookingRepository;
@@ -15,9 +18,6 @@ import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
-
-import org.springframework.transaction.annotation.Transactional;
-
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -43,6 +43,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     @Transactional
     public BookingDto saveBooking(long userId, BookingDto bookingDto) {
+
         User user = userRepository.findById(userId).orElseThrow(() ->
                 new UserNotFoundException("Пользователь не найден " + userId));
         Item item = itemRepository.findById(bookingDto.getItemId()).orElseThrow(() ->
@@ -136,11 +137,13 @@ public class BookingServiceImpl implements BookingService {
     }
 
 
-    @Override
-    public List<BookingDto> getBooking(long userId, String stateParam) {
+    @Override  /*Не владелец */
+    public List<BookingDto> getBooking(long userId, String stateParam, int from, int size) {
         State state = State.from(stateParam)
                 .orElseThrow(() -> new IllegalArgumentException("Unknown state: " + stateParam));
         Sort sort = Sort.by(Sort.Direction.DESC, "start");
+        Pageable pageable = PageRequest.of(from / size, size, Sort.by("start").descending());
+
         Collection<Booking> bookingList = new ArrayList<>();
         LocalDateTime timeNow = LocalDateTime.now();
         if (!userRepository.existsById(userId)) {
@@ -150,7 +153,7 @@ public class BookingServiceImpl implements BookingService {
 
         switch (state) {
             case ALL:
-                bookingList = bookingRepository.findAllByBookerIdOrderByStartDesc(userId);
+                bookingList = bookingRepository.findAllByBookerIdOrderByStartDesc(userId,  pageable);
                 break;
             case PAST:
                 bookingList = bookingRepository.findAllByBookerIdAndEndIsBefore(userId, timeNow, sort);
@@ -174,10 +177,12 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingDto> getOwnerBooking(long userId, String stateParam) {
+    public List<BookingDto> getOwnerBooking(long userId, String stateParam, int from, int size) {
         State state = State.from(stateParam)
                 .orElseThrow(() -> new IllegalArgumentException("Unknown state: " + stateParam));
         Sort sort = Sort.by(Sort.Direction.DESC, "start");
+        Pageable pageable = PageRequest.of(from / size, size, Sort.by("start").descending());
+
         Collection<Booking> bookingList = new ArrayList<>();
         LocalDateTime timeNow = LocalDateTime.now();
         if (!userRepository.existsById(userId)) {
@@ -187,7 +192,7 @@ public class BookingServiceImpl implements BookingService {
 
         switch (state) {
             case ALL:
-                bookingList = bookingRepository.findAllByItem_OwnerIdOrderByStartDesc(userId);
+                bookingList = bookingRepository.findAllByItem_OwnerIdOrderByStartDesc(userId, pageable);
                 break;
             case PAST:
                 bookingList = bookingRepository.findAllByItem_OwnerIdAndEndIsBefore(userId, timeNow, sort);

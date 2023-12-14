@@ -18,13 +18,6 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleNotFoundException(EntityNotFoundException e) {
-        log.error("message");
-        return new ErrorResponse(e.getMessage(), "message");
-    }
-
-    @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleValidationException(final ValidationException e) {
         log.error("Получен статус 400  {}", e.getMessage(), e);
@@ -93,5 +86,12 @@ public class ErrorHandler {
     public ErrorResponse handleThrowable(final RuntimeException e) {
         log.error("Получен статус 500 Internal server error {}", e.getMessage(), e);
         return new ErrorResponse(e.getMessage(), "Ошибка сервера");
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleUserNotFoundException(final RequestNotFoundException e) {
+        log.debug("Получен статус 404 Not found {}", e.getMessage(), e);
+        return new ErrorResponse(e.getMessage(), "Запрос не найден.");
     }
 }
