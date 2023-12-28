@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.enums.Status;
 import ru.practicum.shareit.booking.model.Booking;
@@ -13,7 +12,10 @@ import ru.practicum.shareit.comment.dto.CommentDto;
 import ru.practicum.shareit.comment.mapper.CommentMapper;
 import ru.practicum.shareit.comment.model.Comment;
 import ru.practicum.shareit.comment.repository.CommentRepository;
-import ru.practicum.shareit.exceptions.*;
+import ru.practicum.shareit.exceptions.InCorrectBookingException;
+import ru.practicum.shareit.exceptions.ItemNotFoundException;
+import ru.practicum.shareit.exceptions.ItemUnavailableException;
+import ru.practicum.shareit.exceptions.UserNotFoundException;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
@@ -109,9 +111,6 @@ public class ItemServiceImpl implements ItemService {
             log.debug("Пользователь {} не найден", userId);
             throw new UserNotFoundException("Пользователь не найден " + userId);
         }
-        if ((from < 0 || size < 0 || (from == 0 && size == 0))) {
-            throw new BadRequestException(HttpStatus.BAD_REQUEST, "Неправильный параметр пагинации");
-        }
         Pageable pageable = PageRequest.of(from / size, size);
 
         if (itemRepository.findAllByOwnerId(userId, pageable) == null) {
@@ -131,9 +130,6 @@ public class ItemServiceImpl implements ItemService {
     public Collection<ItemDto> searchItem(String text, int from, int size) {
         if (text.isEmpty()) {
             return Collections.emptyList();
-        }
-        if ((from < 0 || size < 0 || (from == 0 && size == 0))) {
-            throw new BadRequestException(HttpStatus.BAD_REQUEST, "Неправильный параметр пагинации");
         }
         log.info("Выполнен поиск среди предметов по : {}.", text);
         return itemRepository.searchItem(text, PageRequest.of(from / size, size))

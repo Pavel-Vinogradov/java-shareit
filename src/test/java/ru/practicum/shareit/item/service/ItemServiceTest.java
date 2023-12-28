@@ -8,13 +8,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.PageRequest;
 import ru.practicum.shareit.booking.enums.Status;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.comment.dto.CommentDto;
 import ru.practicum.shareit.comment.model.Comment;
 import ru.practicum.shareit.comment.repository.CommentRepository;
-import ru.practicum.shareit.exceptions.BadRequestException;
 import ru.practicum.shareit.exceptions.InCorrectBookingException;
 import ru.practicum.shareit.exceptions.ItemNotFoundException;
 import ru.practicum.shareit.exceptions.UserNotFoundException;
@@ -26,10 +26,7 @@ import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -60,7 +57,6 @@ public class ItemServiceTest {
     private Comment comment;
     private Booking booking;
     private Item item;
-    private Request request;
 
     @BeforeEach
     void setUp() {
@@ -88,9 +84,9 @@ public class ItemServiceTest {
                 .booker(user)
                 .status(Status.WAITING)
                 .build();
-        request = Request.builder()
+        Request request = Request.builder()
                 .id(1L)
-                .requestor(user)
+                .requester(user)
                 .description("user2")
                 .created(LocalDateTime.now())
                 .build();
@@ -197,15 +193,6 @@ public class ItemServiceTest {
         ItemDto updatedItem = itemService.updateItem(itemDto, user.getId());
         assertEquals(updatedItem, toItemDto(item));
 
-    }
-
-    @Test
-    void searchItemNullTest() {
-
-        assertEquals(List.of(), itemService.searchItem("".toLowerCase(), 0, 20));
-        assertEquals(List.of(), itemService.searchItem(" ", 0, 20));
-        assertThrows(BadRequestException.class, () -> itemService.searchItem("1".toLowerCase(), -1, -1));
-        assertThrows(BadRequestException.class, () -> itemService.searchItem("1".toLowerCase(), 0, 0));
     }
 
     @Test
@@ -327,9 +314,6 @@ public class ItemServiceTest {
 
         when(userRepository.existsById(1L)).thenReturn(true);
 
-        assertThrows(BadRequestException.class, () -> itemService.getItemsByUser(1L, -1, -1));
-        assertThrows(BadRequestException.class, () -> itemService.getItemsByUser(1L, 0, 0));
-
         when(itemRepository.findAllByOwnerId(eq(1L), any())).thenReturn(null);
         assertThrows(ItemNotFoundException.class, () -> itemService.getItemsByUser(1L, 0, 20));
 
@@ -341,5 +325,19 @@ public class ItemServiceTest {
         List<ItemDto> result1 = itemService.getItemsByUser(1L, 0, 20);
         assertNotNull(result1);
         assertFalse(result1.isEmpty());
+    }
+
+    @Test
+    void searchItemTest() {
+        Collection<ItemDto> result = itemService.searchItem("", 0, 10);
+        assertEquals(Collections.emptyList(), result);
+        String searchText = "validSearchText";
+        int from = 0;
+        int size = 10;
+        when(itemRepository.searchItem(searchText, PageRequest.of(0, size)))
+                .thenReturn(List.of(item));
+
+        result = itemService.searchItem(searchText, from, size);
+        assertFalse(result.isEmpty());
     }
 }

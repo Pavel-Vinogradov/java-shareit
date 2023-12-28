@@ -28,8 +28,8 @@ public class Request {
     @Column(name = "description", nullable = false)
     private String description;
     @ManyToOne
-    @JoinColumn(name = "requestor_id", nullable = false)
-    private User requestor;
+    @JoinColumn(name = "requester_id", nullable = false)
+    private User requester;
     @Column(name = "created")
     private LocalDateTime created;
     @OneToMany(mappedBy = "request", orphanRemoval = true, cascade = CascadeType.ALL)

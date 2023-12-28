@@ -12,7 +12,7 @@ public class RequestMapper {
     public static Request toItemRequest(User user, RequestDto requestDto) {
         return Request.builder()
                 .description(requestDto.getDescription())
-                .requestor(user)
+                .requester(user)
                 .build();
     }
 

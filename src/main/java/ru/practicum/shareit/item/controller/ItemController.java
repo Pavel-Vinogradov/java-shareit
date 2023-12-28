@@ -2,14 +2,15 @@ package ru.practicum.shareit.item.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.comment.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.service.ItemService;
 
 import javax.validation.Valid;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.Collection;
 import java.util.List;
 
@@ -20,6 +21,7 @@ import java.util.List;
 @RequestMapping("/items")
 @RequiredArgsConstructor
 @Slf4j
+@Validated
 public class ItemController {
     private static final String USER_ID_HEADER = "X-Sharer-User-Id";
     private final ItemService itemService;
@@ -48,17 +50,17 @@ public class ItemController {
 
     @GetMapping
     public List<ItemDto> getItemsByUser(@RequestHeader(name = USER_ID_HEADER) long userId,
-                                        @RequestParam(required = false, defaultValue = "0") @Min(0) int from,
-                                        @RequestParam(required = false, defaultValue = "10") @Min(0) int size
+                                        @RequestParam(required = false, defaultValue = "0") @PositiveOrZero int from,
+                                        @RequestParam(required = false, defaultValue = "10") @Positive int size
     ) {
         log.info("Получен GET-запрос: список всех предметов одного пользователя {} ", userId);
         return itemService.getItemsByUser(userId, from, size);
     }
 
     @GetMapping("/search")
-    public Collection<ItemDto> searchItem(@RequestParam @NotBlank String text,
-                                          @RequestParam(required = false, defaultValue = "0") @Min(0) int from,
-                                          @RequestParam(required = false, defaultValue = "10") @Min(0) int size
+    public Collection<ItemDto> searchItem(@RequestParam String text,
+                                          @RequestParam(required = false, defaultValue = "0") @PositiveOrZero int from,
+                                          @RequestParam(required = false, defaultValue = "10") @Positive int size
     ) {
         log.info("Получен GET-запрос /text {} ", text);
         return itemService.searchItem(text, from, size);

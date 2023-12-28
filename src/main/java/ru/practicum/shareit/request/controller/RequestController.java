@@ -2,13 +2,15 @@ package ru.practicum.shareit.request.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.request.dto.RequestDto;
 import ru.practicum.shareit.request.dto.RequestDtoWithRequest;
 import ru.practicum.shareit.request.service.ItemRequestService;
 
 import javax.validation.Valid;
-import javax.validation.constraints.Min;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 /**
@@ -17,6 +19,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @Slf4j
+@Validated
 @RequestMapping(path = "/requests")
 public class RequestController {
     private static final String USER_ID_HEADER = "X-Sharer-User-Id";
@@ -37,8 +40,8 @@ public class RequestController {
 
     @GetMapping(path = "/all")
     public List<RequestDtoWithRequest> getAllRequests(@RequestHeader(name = USER_ID_HEADER) Long userId,
-                                                      @RequestParam(required = false, defaultValue = "0") @Min(0) int from,
-                                                      @RequestParam(required = false, defaultValue = "20") @Min(0) int size
+                                                      @RequestParam(required = false, defaultValue = "0") @PositiveOrZero int from,
+                                                      @RequestParam(required = false, defaultValue = "20") @Positive int size
     ) {
         log.info("Получен GET-запрос на получение списка запросов, созданных другими пользователями. " +
                 "Результаты возвращаются постранично от {} в количестве {}.", from, size);

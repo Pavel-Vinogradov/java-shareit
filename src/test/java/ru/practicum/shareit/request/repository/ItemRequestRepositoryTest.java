@@ -58,7 +58,7 @@ public class ItemRequestRepositoryTest {
                 .id(1L)
                 .created(LocalDateTime.of(2023, 7, 9, 13, 56))
                 .description("Хотел бы воспользоваться щёткой для обуви")
-                .requestor(user)
+                .requester(user)
                 .items(Collections.singletonList(item))
                 .build());
         System.out.println(request);
@@ -71,22 +71,22 @@ public class ItemRequestRepositoryTest {
 
     @Test
     void findAllByRequestorIdTest() {
-        List<Request> requestList = itemRequestRepository.findAllByRequestorId(1L);
+        List<Request> requestList = itemRequestRepository.findAllByRequesterIdOrderByIdAsc(1L);
         assertNotNull(requestList);
     }
 
     @Test
     void findByOwnerIdTest() {
-        List<Request> requestList = itemRequestRepository.findAllByRequestorIdIsNot(otherUser.getId(), null);
+        List<Request> requestList = itemRequestRepository.findAllByRequesterIdIsNot(otherUser.getId(), null);
 
         assertEquals(requestList.get(0).getId(), request.getId());
         assertEquals(requestList.get(0).getDescription(), "Хотел бы воспользоваться щёткой для обуви");
         assertEquals(requestList.get(0).getCreated(), LocalDateTime.of(2023, 7, 9, 13, 56));
-        assertEquals(requestList.get(0).getRequestor().getId(), user.getId());
-        assertEquals(requestList.get(0).getRequestor().getName(), "Ivan");
-        assertEquals(requestList.get(0).getRequestor().getEmail(), "ivan@mail.ru");
+        assertEquals(requestList.get(0).getRequester().getId(), user.getId());
+        assertEquals(requestList.get(0).getRequester().getName(), "Ivan");
+        assertEquals(requestList.get(0).getRequester().getEmail(), "ivan@mail.ru");
 
-        List<Request> requestList1 = itemRequestRepository.findAllByRequestorIdIsNot(user.getId(), null);
+        List<Request> requestList1 = itemRequestRepository.findAllByRequesterIdIsNot(user.getId(), null);
         assertEquals(requestList1.size(), 0);
     }
 

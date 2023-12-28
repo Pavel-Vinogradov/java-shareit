@@ -2,10 +2,8 @@ package ru.practicum.shareit.request.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.shareit.exceptions.BadRequestException;
 import ru.practicum.shareit.exceptions.RequestNotFoundException;
 import ru.practicum.shareit.exceptions.UserNotFoundException;
 import ru.practicum.shareit.item.dto.ItemDtoReq;
@@ -19,7 +17,6 @@ import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static ru.practicum.shareit.request.mappers.RequestMapper.*;
@@ -33,18 +30,12 @@ public class ItemRequestServiceIml implements ItemRequestService {
 
     @Override
     public RequestDto addItemRequest(RequestDto requestDto, long userId) {
-        Optional<User> newUser = userRepository.findById(userId);
-        if (newUser.isPresent()) {
-            User user = newUser.get();
-
-            Request request = toItemRequest(user, requestDto);
-            request.setRequestor(user);
-            request.setCreated(LocalDateTime.now());
-
-            return toItemRequestDto(itemRequestRepository.save(request));
-        } else {
-            throw new UserNotFoundException("Пользователь с id " + "userId" + "не найден");
-        }
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("Пользователь с id " + userId + " не найден"));
+        Request request = toItemRequest(user, requestDto);
+        request.setRequester(user);
+        request.setCreated(LocalDateTime.now());
+        return toItemRequestDto(itemRequestRepository.save(request));
     }
 
     @Override
@@ -52,7 +43,7 @@ public class ItemRequestServiceIml implements ItemRequestService {
         userRepository.findById(userId).orElseThrow(() ->
                 new UserNotFoundException("Пользователь не найден " + userId));
         List<RequestDtoWithRequest> requestDtoWithRequests =
-                itemRequestRepository.findAllByRequestorId(userId).stream()
+                itemRequestRepository.findAllByRequesterIdOrderByIdAsc(userId).stream()
                         .map(RequestMapper::toRequestDtoWithRequest)
                         .collect(Collectors.toList());
         for (RequestDtoWithRequest withRequest : requestDtoWithRequests) {
@@ -65,13 +56,9 @@ public class ItemRequestServiceIml implements ItemRequestService {
 
     @Override
     public List<RequestDtoWithRequest> getAllItemRequest(long userId, int from, int size) {
-        if ((from < 0 || size < 0 || (from == 0 && size == 0))) {
-            throw new BadRequestException(HttpStatus.BAD_REQUEST, "неверный параметр пагинации");
-        }
-
         userRepository.findById(userId).orElseThrow(() ->
                 new UserNotFoundException("Пользователь не найден " + userId));
-        List<Request> byOwnerId = itemRequestRepository.findAllByRequestorIdIsNot(userId, PageRequest.of(from / size, size));
+        List<Request> byOwnerId = itemRequestRepository.findAllByRequesterIdIsNot(userId, PageRequest.of(from / size, size));
         List<RequestDtoWithRequest> requestDtoWithRequests =
                 byOwnerId.stream()
                         .map(RequestMapper::toRequestDtoWithRequest)

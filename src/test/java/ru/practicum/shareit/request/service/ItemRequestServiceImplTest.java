@@ -8,7 +8,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
-import ru.practicum.shareit.exceptions.BadRequestException;
 import ru.practicum.shareit.exceptions.RequestNotFoundException;
 import ru.practicum.shareit.exceptions.UserNotFoundException;
 import ru.practicum.shareit.item.model.Item;
@@ -71,7 +70,7 @@ public class ItemRequestServiceImplTest {
                 .id(1L)
                 .created(LocalDateTime.of(2023, 7, 9, 13, 56))
                 .description("Хотел бы воспользоваться щёткой для обуви")
-                .requestor(user)
+                .requester(user)
                 .items(Collections.singletonList(item))
                 .build();
 
@@ -112,7 +111,7 @@ public class ItemRequestServiceImplTest {
                 () -> itemRequestService.getItemRequest(1L));
         when(userRepository.findById(1L))
                 .thenReturn(Optional.of(user));
-        when(itemRequestRepository.findAllByRequestorId(anyLong()))
+        when(itemRequestRepository.findAllByRequesterIdOrderByIdAsc(anyLong()))
                 .thenReturn(List.of(request));
         List<RequestDtoWithRequest> requestList = itemRequestService.getItemRequest(1L);
         RequestDtoWithRequest requestDto1 = mapper.map(request, RequestDtoWithRequest.class);
@@ -138,21 +137,11 @@ public class ItemRequestServiceImplTest {
                 () -> itemRequestService.getAllItemRequest(1L, 1, 1));
         when(userRepository.findById(1L))
                 .thenReturn(Optional.of(user));
-        when(itemRequestRepository.findAllByRequestorIdIsNot(anyLong(), any()))
+        when(itemRequestRepository.findAllByRequesterIdIsNot(anyLong(), any()))
                 .thenReturn(List.of(request));
         List<RequestDtoWithRequest> requestList = itemRequestService.getAllItemRequest(1L, 1, 1);
         RequestDtoWithRequest requestDto1 = mapper.map(request, RequestDtoWithRequest.class);
         assertEquals(requestList, List.of(requestDto1));
-    }
-
-
-    @Test
-    void getAllItemRequestWithWrongRequestIdTest() {
-
-        var exception = assertThrows(
-                BadRequestException.class,
-                () -> itemRequestService.getAllItemRequest(1L, -1, 1));
-        assertEquals("400 BAD_REQUEST \"неверный параметр пагинации\"", exception.getMessage());
     }
 
     @Test

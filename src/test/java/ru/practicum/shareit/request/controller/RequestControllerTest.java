@@ -63,16 +63,12 @@ public class RequestControllerTest {
                 .id(1L)
                 .created(LocalDateTime.of(2023, 7, 9, 13, 56))
                 .description("Хотел бы воспользоваться щёткой для обуви")
-                .requestor(userDto)
-                .items(new ArrayList<>())
                 .build();
 
         requestDtoWithRequest = RequestDtoWithRequest.builder()
                 .id(1L)
                 .created(LocalDateTime.of(2023, 7, 9, 13, 56))
                 .description("Хотел бы воспользоваться щёткой для обуви")
-                .requestor(userDto)
-                .items(new ArrayList<>())
                 .build();
 
     }
@@ -91,7 +87,6 @@ public class RequestControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").isNumber())
-                .andExpect(jsonPath("$.requestor.id", is(requestDto.getRequestor().getId()), Long.class))
                 .andExpect(jsonPath("$.description", is(requestDto.getDescription())));
     }
 
@@ -107,7 +102,7 @@ public class RequestControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].requestor.id", is(requestDto.getRequestor().getId()), Long.class))
+                .andExpect(jsonPath("$[0].id", is(requestDto.getId()), Long.class))
                 .andExpect(jsonPath("$[0].description", is(requestDto.getDescription())));
     }
 
@@ -118,7 +113,6 @@ public class RequestControllerTest {
         Long userId = userDto.getId();
         RequestDtoWithRequest requestDtoWithRequest = RequestDtoWithRequest.builder()
                 .id(requestDto.getId())
-                .requestor(requestDto.getRequestor())
                 .created(requestDto.getCreated())
                 .items(Collections.emptyList())
                 .build();
@@ -160,7 +154,7 @@ public class RequestControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].requestor.id", is(requestDto.getRequestor().getId()), Long.class))
+                .andExpect(jsonPath("$[0].id", is(requestDto.getId()), Long.class))
                 .andExpect(jsonPath("$[0].description", is(requestDto.getDescription())));
     }
 
@@ -174,7 +168,7 @@ public class RequestControllerTest {
                         .header("X-Sharer-User-Id", 1L)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.requestor.id", is(requestDto.getRequestor().getId()), Long.class))
+                .andExpect(jsonPath("$.id").isNumber())
                 .andExpect(jsonPath("$.description", is(requestDto.getDescription())));
     }
 }

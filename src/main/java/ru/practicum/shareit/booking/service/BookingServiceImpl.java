@@ -137,7 +137,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
 
-    @Override  /*Не владелец */
+    @Override
     public List<BookingDto> getBooking(long userId, String stateParam, int from, int size) {
         State state = State.from(stateParam)
                 .orElseThrow(() -> new IllegalArgumentException("Unknown state: " + stateParam));
@@ -153,7 +153,7 @@ public class BookingServiceImpl implements BookingService {
 
         switch (state) {
             case ALL:
-                bookingList = bookingRepository.findAllByBookerIdOrderByStartDesc(userId,  pageable);
+                bookingList = bookingRepository.findAllByBookerIdOrderByStartDesc(userId, pageable);
                 break;
             case PAST:
                 bookingList = bookingRepository.findAllByBookerIdAndEndIsBefore(userId, timeNow, sort);

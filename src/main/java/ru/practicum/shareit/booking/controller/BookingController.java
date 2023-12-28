@@ -8,7 +8,8 @@ import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.service.BookingService;
 
 import javax.validation.Valid;
-import javax.validation.constraints.Min;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 /**
@@ -49,8 +50,8 @@ public class BookingController {
     @GetMapping
     public List<BookingDto> getAllBookingsForBooker(@RequestHeader(name = USER_ID_HEADER) long userId,
                                                     @RequestParam(name = "state", defaultValue = "all") String stateParam,
-                                                    @RequestParam(required = false, defaultValue = "0") @Min(0) int from,
-                                                    @RequestParam(required = false, defaultValue = "10") @Min(0) int size
+                                                    @RequestParam(required = false, defaultValue = "0") @PositiveOrZero int from,
+                                                    @RequestParam(required = false, defaultValue = "10") @Positive int size
     ) {
         log.info("Получен GET-запрос просмотра всех забронированных вещей и статусов их бронирования " +
                 "для  пользователя");
@@ -60,8 +61,8 @@ public class BookingController {
     @GetMapping("/owner")
     public List<BookingDto> getAllBookingsForOwner(@RequestHeader(name = USER_ID_HEADER) long userId,
                                                    @RequestParam(name = "state", defaultValue = "all") String stateParam,
-                                                   @RequestParam(required = false, defaultValue = "0") @Min(0) int from,
-                                                   @RequestParam(required = false, defaultValue = "10") @Min(0) int size
+                                                   @RequestParam(required = false, defaultValue = "0") @PositiveOrZero int from,
+                                                   @RequestParam(required = false, defaultValue = "10") @Positive int size
     ) {
         log.info("Получен GET-запрос просмотра всех забронированных вещей и статусов их бронирования " +
                 "для владельца");
