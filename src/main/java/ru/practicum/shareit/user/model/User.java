@@ -15,6 +15,7 @@ import javax.validation.constraints.NotBlank;
 @EqualsAndHashCode(exclude = {"id"})
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @Table(name = "users")
 public class User {
     @Id

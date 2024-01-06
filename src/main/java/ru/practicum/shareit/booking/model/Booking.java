@@ -16,13 +16,14 @@ import java.time.LocalDateTime;
 @EqualsAndHashCode(exclude = {"id"})
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @Entity
 @Table(name = "bookings")
 public class Booking {
     @Id
     @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
     @Column(name = "start_date")
     private LocalDateTime start;
     @Column(name = "end_date")

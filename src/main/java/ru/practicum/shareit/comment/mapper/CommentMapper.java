@@ -13,7 +13,6 @@ public class CommentMapper {
     public static CommentDto toCommentDto(Comment comment) {
         return CommentDto.builder()
                 .id(comment.getId())
-                .author(comment.getAuthor())
                 .text(comment.getText())
                 .created(comment.getCreated())
                 .authorName(comment.getAuthor().getName())
@@ -21,11 +20,13 @@ public class CommentMapper {
     }
 
     public static Comment toComment(User user, Item item, CommentDto commentDto, LocalDateTime created) {
-        Comment comment = new Comment();
-        comment.setAuthor(user);
-        comment.setText(commentDto.getText());
-        comment.setItem(item);
-        comment.setCreated(created);
-        return comment;
+        return Comment.builder()
+                .id(commentDto.getId())
+                .text(commentDto.getText())
+                .created(commentDto.getCreated())
+                .author(user)
+                .item(item)
+                .created(created)
+                .build();
     }
 }
