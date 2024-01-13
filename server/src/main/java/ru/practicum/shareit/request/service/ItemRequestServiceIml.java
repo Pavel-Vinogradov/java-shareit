@@ -2,7 +2,6 @@ package ru.practicum.shareit.request.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.exceptions.RequestNotFoundException;
@@ -15,7 +14,6 @@ import ru.practicum.shareit.request.model.Request;
 import ru.practicum.shareit.request.repository.ItemRequestRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
-import ru.practicum.shareit.exceptions.MethodArgumentNotValidException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -59,9 +57,6 @@ public class ItemRequestServiceIml implements ItemRequestService {
 
     @Override
     public List<RequestDtoWithRequest> getAllItemRequest(long userId, int from, int size) {
-        if ((from < 0 || size < 0 || (from == 0 && size == 0))) {
-            throw new MethodArgumentNotValidException(HttpStatus.BAD_REQUEST, "неверный параметр пагинации");
-        }
         userRepository.findById(userId).orElseThrow(() ->
                 new UserNotFoundException("Пользователь не найден " + userId));
         List<Request> byOwnerId = itemRequestRepository.findAllByRequesterIdIsNot(userId, PageRequest.of(from / size, size));

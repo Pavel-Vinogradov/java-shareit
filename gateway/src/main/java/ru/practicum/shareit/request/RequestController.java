@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.request.dto.RequestDto;
 
 import javax.validation.constraints.Min;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 
 /**
  * TODO Sprint add-item-requests.
@@ -16,6 +18,7 @@ import javax.validation.constraints.Min;
 @RequiredArgsConstructor
 @Slf4j
 @RequestMapping(path = "/requests")
+@Validated
 public class RequestController {
     private static final String USER_ID_HEADER = "X-Sharer-User-Id";
     private final ItemRequestClient requestClient;
@@ -33,11 +36,9 @@ public class RequestController {
     @GetMapping
     public ResponseEntity<Object> getRequests(@RequestHeader(name = USER_ID_HEADER) @Min(value = 1,
             message = "User id should be more than 0") Long userId,
-                                                   @RequestParam(defaultValue = "0") @Min(value = 0,
-                                                           message = "Parameter 'from' must be more than 0")
+                                                   @RequestParam(defaultValue = "0") @PositiveOrZero
                                                    Integer from,
-                                                   @RequestParam(defaultValue = "10") @Min(value = 0,
-                                                           message = "Parameter 'size' must be more than 0")
+                                                   @RequestParam(defaultValue = "10") @Positive
                                                   Integer size) {
         log.info("Получен GET-запрос от ID пользователя {} на получение списка своих запросов вместе с данными о них." +
                 " Результаты возвращаются постранично от {}, в количестве {}.", userId, from, size);
